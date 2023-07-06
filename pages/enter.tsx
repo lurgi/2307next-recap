@@ -2,8 +2,9 @@ import type { NextPage } from "next";
 import { useState } from "react";
 import Button from "../components/button";
 import Input from "../components/input";
-import { cls } from "../libs/utils";
+import { cls } from "../libs/client/utils";
 import { useForm } from "react-hook-form";
+import useMutation from "@/libs/client/mutation";
 
 interface IForm {
   email?: string;
@@ -11,20 +12,14 @@ interface IForm {
 }
 
 const Enter: NextPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { register, handleSubmit, reset } = useForm<IForm>();
+  const [enter, { isLoading, data, error }] = useMutation("/api/users/enter");
+  const { register, handleSubmit } = useForm<IForm>();
   const [method, setMethod] = useState<"email" | "phone">("email");
   const onEmailClick = () => setMethod("email");
   const onPhoneClick = () => setMethod("phone");
   const oninvalid = (data: IForm) => {
-    setIsLoading(true);
-    fetch("/api/users/enter", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then(() => setIsLoading(false));
+    enter(data);
+    console.log(isLoading, data, error);
   };
   return (
     <div className="mt-16 px-4">
