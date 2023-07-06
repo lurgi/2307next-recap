@@ -4,18 +4,25 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, phone } = req.body;
-  const payload = phone ? { phone: +phone } : { email };
-  const user = await client.user.upsert({
-    create: {
-      name: "Anonymous",
-      ...payload,
-    },
-    update: {},
-    where: {
-      ...payload,
+  const user = phone ? { phone: +phone } : { email };
+  const payload = Math.floor(100000 + Math.random() * 90000) + "";
+  const token = await client.token.create({
+    data: {
+      payload,
+      user: {
+        connectOrCreate: {
+          create: {
+            name: "Anonymous",
+            ...user,
+          },
+          where: {
+            ...user,
+          },
+        },
+      },
     },
   });
-  console.log(user);
+  console.log(token);
   return res.status(200).end();
 }
 
