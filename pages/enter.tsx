@@ -19,7 +19,6 @@ const Enter: NextPage = () => {
   const onPhoneClick = () => setMethod("phone");
   const oninvalid = (data: IForm) => {
     enter(data);
-    console.log(isLoading, data, error);
   };
   return (
     <div className="mt-16 px-4">
