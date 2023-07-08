@@ -1,7 +1,7 @@
 import client from "@/libs/server/client";
 import withHandler from "@/libs/server/withHandler";
 import { NextApiRequest, NextApiResponse } from "next";
-import smtpTransport from "./email";
+import smtpTransport from "../server/email";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { email, phone } = req.body;
@@ -27,8 +27,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
   });
   smtpTransport.close();
-  console.log(result);
-  const token = await client.token.create({
+  await client.token.create({
     data: {
       payload,
       user: {
