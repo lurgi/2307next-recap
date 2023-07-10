@@ -18,7 +18,24 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       },
     },
   });
-  res.json({ ok: true, detail });
+  const terms = detail?.name.split(" ").map((v) => ({
+    name: {
+      contains: v,
+    },
+  }));
+  const relativeProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: detail?.id,
+        },
+      },
+    },
+
+    take: 4,
+  });
+  res.json({ ok: true, detail, relativeProducts });
 }
 
 export default withHandler({ methods: ["GET"], handler });
