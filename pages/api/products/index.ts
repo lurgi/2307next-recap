@@ -5,7 +5,15 @@ import client from "@/libs/server/client";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
-    const products = await client.product.findMany();
+    const products = await client.product.findMany({
+      include: {
+        _count: {
+          select: {
+            favs: true,
+          },
+        },
+      },
+    });
     res.json({ ok: true, products });
   }
   if (req.method === "POST") {
