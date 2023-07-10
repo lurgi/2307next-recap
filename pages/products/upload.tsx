@@ -23,7 +23,7 @@ interface IUploadProductMutation {
 const Upload: NextPage = () => {
   const { register, handleSubmit } = useForm<IProductForm>();
   const [upLoadProduct, { isLoading, data, error }] =
-    useMutation<IUploadProductMutation>("/api/product");
+    useMutation<IUploadProductMutation>("/api/products");
   const onValid = (data: IProductForm) => {
     if (isLoading) return;
     upLoadProduct(data);

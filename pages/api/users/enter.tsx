@@ -48,4 +48,4 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   });
 }
 
-export default withHandler({ method: "POST", handler });
+export default withHandler({ methods: ["POST"], handler });
