@@ -38,7 +38,7 @@ const ItemDetail: NextPage = () => {
     toggleLike({});
   };
   return (
-    <Layout canGoBack>
+    <Layout canGoBack title="제품 상세">
       <div className="px-4  py-4">
         <div className="mb-8">
           <div className="h-96 bg-slate-300" />

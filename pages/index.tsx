@@ -5,6 +5,7 @@ import Layout from "../components/layout";
 import useUser from "@/libs/client/useUser";
 import useSWR from "swr";
 import { Product } from "@prisma/client";
+import client from "@/libs/server/client";
 
 interface ProductWithFavs extends Product {
   _count: {
@@ -13,17 +14,17 @@ interface ProductWithFavs extends Product {
 }
 
 interface ISwrResponse {
-  ok: boolean;
+  ok?: boolean;
   products: ProductWithFavs[];
 }
 
-const Home: NextPage = () => {
+const Home: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
   const { user, isLoading } = useUser();
-  const { data } = useSWR<ISwrResponse>("/api/products");
+  // const { data } = useSWR<ISwrResponse>("/api/products");
   return (
     <Layout title="홈" hasTabBar>
       <div className="flex flex-col space-y-5 divide-y">
-        {data?.products.map((product) => (
+        {products?.map((product) => (
           <Item
             id={product.id}
             key={product.id}
@@ -54,5 +55,22 @@ const Home: NextPage = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps() {
+  const products = await client.product.findMany({
+    include: {
+      _count: {
+        select: {
+          favs: true,
+        },
+      },
+    },
+  });
+  return {
+    props: {
+      products: JSON.parse(JSON.stringify(products)),
+    },
+  };
+}
 
 export default Home;
