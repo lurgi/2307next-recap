@@ -41,6 +41,9 @@ const ItemDetail: NextPage<ISwrProductDetail> = ({
     boundMutate((prev) => prev && { ...prev, isLike: !prev.isLike }, false);
     toggleLike({});
   };
+  if (router.isFallback) {
+    return <h1>this is Loading page....</h1>;
+  }
   return (
     <Layout canGoBack title="제품 상세">
       <div className="px-4  py-4">
@@ -115,7 +118,7 @@ const ItemDetail: NextPage<ISwrProductDetail> = ({
 export const getStaticPaths: GetStaticPaths = () => {
   return {
     paths: [],
-    fallback: "blocking",
+    fallback: true,
   };
 };
 
