@@ -1,4 +1,4 @@
-import type { NextPage } from "next";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Button from "../../components/button";
 import Layout from "../../components/layout";
 import { useRouter } from "next/router";
@@ -7,6 +7,7 @@ import { Product } from "@prisma/client";
 import { cls } from "@/libs/client/utils";
 import useMutation from "@/libs/client/mutation";
 import useUser from "@/libs/client/useUser";
+import client from "@/libs/server/client";
 
 interface ProductWithUser extends Product {
   user: {
@@ -17,13 +18,16 @@ interface ProductWithUser extends Product {
 }
 
 interface ISwrProductDetail {
-  ok: boolean;
+  ok?: boolean;
   detail: ProductWithUser;
   relativeProducts: Product[];
   isLike: boolean;
 }
-
-const ItemDetail: NextPage = () => {
+const ItemDetail: NextPage<ISwrProductDetail> = ({
+  detail,
+  relativeProducts,
+  isLike,
+}) => {
   const router = useRouter();
   const user = useUser();
   const { id } = router.query;
@@ -46,7 +50,7 @@ const ItemDetail: NextPage = () => {
             <div className="w-12 h-12 rounded-full bg-slate-300" />
             <div>
               <p className="text-sm font-medium text-gray-700">
-                {data?.detail?.user.name}
+                {detail?.user.name}
               </p>
               <p className="text-xs font-medium text-gray-500">
                 View profile &rarr;
@@ -54,20 +58,18 @@ const ItemDetail: NextPage = () => {
             </div>
           </div>
           <div className="mt-5">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {data?.detail?.name}
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">{detail?.name}</h1>
             <span className="text-2xl block mt-3 text-gray-900">
-              {data?.detail?.price}
+              {detail?.price}
             </span>
-            <p className=" my-6 text-gray-700">{data?.detail?.description}</p>
+            <p className=" my-6 text-gray-700">{detail?.description}</p>
             <div className="flex items-center justify-between space-x-2">
               <Button large text="Talk to seller" />
               <button
-                onClick={onClickLike}
+                // onClick={onClickLike}
                 className={cls(
                   "p-3 rounded-md flex items-center justify-center hover:bg-gray-100 ",
-                  data?.isLike
+                  isLike
                     ? "text-red-400 hover:text-red-500"
                     : "text-gray-400 hover:text-gray-500"
                 )}
@@ -94,7 +96,7 @@ const ItemDetail: NextPage = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
           <div className=" mt-6 grid grid-cols-2 gap-4">
-            {data?.relativeProducts?.map((product) => (
+            {relativeProducts?.map((product) => (
               <div key={product.id}>
                 <div className="h-56 w-full mb-4 bg-slate-300" />
                 <h3 className="text-gray-700 -mb-1">{product.name}</h3>
@@ -108,6 +110,62 @@ const ItemDetail: NextPage = () => {
       </div>
     </Layout>
   );
+};
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return {
+    paths: [],
+    fallback: "blocking",
+  };
+};
+
+export const getStaticProps: GetStaticProps = async (ctx) => {
+  console.log(ctx?.params?.id);
+  const id = ctx?.params?.id;
+  if (!id) {
+    return {
+      props: {},
+    };
+  }
+  const detail = await client.product.findUnique({
+    where: {
+      id: +id?.toString()!,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+    },
+  });
+  const terms = detail?.name.split(" ").map((v) => ({
+    name: {
+      contains: v,
+    },
+  }));
+  const relativeProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: detail?.id,
+        },
+      },
+    },
+
+    take: 4,
+  });
+  const isLike = false;
+  return {
+    props: {
+      detail,
+      relativeProducts,
+      isLike,
+    },
+  };
 };
 
 export default ItemDetail;
