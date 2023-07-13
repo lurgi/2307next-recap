@@ -6,6 +6,7 @@ import useUser from "@/libs/client/useUser";
 import useSWR, { SWRConfig } from "swr";
 import { Product } from "@prisma/client";
 import client from "@/libs/server/client";
+import { Suspense } from "react";
 
 interface ProductWithFavs extends Product {
   _count: {
@@ -18,13 +19,13 @@ interface ISwrResponse {
   products: ProductWithFavs[];
 }
 
-const Home: NextPage<ISwrResponse> = ({ products }) => {
-  // const { user, isLoading } = useUser();
-  // const { data } = useSWR<ISwrResponse>("/api/products");
+const Home: NextPage = () => {
+  const { user, isLoading } = useUser();
+  const { data } = useSWR<ISwrResponse>("/api/products");
   return (
     <Layout title="홈" hasTabBar>
       <div className="flex flex-col space-y-5 divide-y">
-        {products.map((product) => (
+        {data?.products?.map((product) => (
           <Item
             id={product.id}
             key={product.id}
@@ -57,41 +58,38 @@ const Home: NextPage<ISwrResponse> = ({ products }) => {
 };
 
 //ISR
-export async function getStaticProps() {
-  console.log("Revalidate!");
-  const products = await client.product.findMany({
-    include: {
-      _count: {
-        select: {
-          favs: true,
-        },
-      },
-    },
-  });
-  return {
-    props: {
-      products: JSON.parse(JSON.stringify(products)),
-    },
-  };
-}
-
-// const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
-//   console.log(products);
-//   return (
-//     <SWRConfig
-//       value={{
-//         fallback: {
-//           "/api/products": {
-//             ok: true,
-//             products,
-//           },
+// export async function getStaticProps() {
+//   console.log("Revalidate!");
+//   const products = await client.product.findMany({
+//     include: {
+//       _count: {
+//         select: {
+//           favs: true,
 //         },
-//       }}
-//     >
-//       <Home />
-//     </SWRConfig>
-//   );
-// };
+//       },
+//     },
+//   });
+//   return {
+//     props: {
+//       products: JSON.parse(JSON.stringify(products)),
+//     },
+//   };
+// }
+
+const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
+  console.log(products);
+  return (
+    <SWRConfig
+      value={{
+        suspense: true,
+      }}
+    >
+      <Suspense fallback={<span>LoadConfig...</span>}>
+        <Home />
+      </Suspense>
+    </SWRConfig>
+  );
+};
 
 // export async function getServerSideProps() {
 //   const products = await client.product.findMany({});
@@ -102,4 +100,4 @@ export async function getStaticProps() {
 //   };
 // }
 
-export default Home;
+export default Page;
