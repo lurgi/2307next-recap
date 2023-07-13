@@ -36,6 +36,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         },
       },
     });
+    await res.revalidate("/");
     res.json({ ok: true, product });
   }
 }
