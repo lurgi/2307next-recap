@@ -18,13 +18,13 @@ interface ISwrResponse {
   products: ProductWithFavs[];
 }
 
-const Home = () => {
-  const { user, isLoading } = useUser();
-  const { data } = useSWR<ISwrResponse>("/api/products");
+const Home: NextPage<ISwrResponse> = ({ products }) => {
+  // const { user, isLoading } = useUser();
+  // const { data } = useSWR<ISwrResponse>("/api/products");
   return (
     <Layout title="홈" hasTabBar>
       <div className="flex flex-col space-y-5 divide-y">
-        {data?.products.map((product) => (
+        {products.map((product) => (
           <Item
             id={product.id}
             key={product.id}
@@ -34,7 +34,7 @@ const Home = () => {
             hearts={product?._count?.favs}
           />
         ))}
-        <FloatingButton href="/items/upload">
+        <FloatingButton href="/products/upload">
           <svg
             className="h-6 w-6"
             xmlns="http://www.w3.org/2000/svg"
@@ -56,30 +56,51 @@ const Home = () => {
   );
 };
 
-const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
-  return (
-    <SWRConfig
-      value={{
-        fallback: {
-          "/api/products": {
-            ok: true,
-            products,
-          },
+//ISR
+export async function getStaticProps() {
+  console.log("Revalidate!");
+  const products = await client.product.findMany({
+    include: {
+      _count: {
+        select: {
+          favs: true,
         },
-      }}
-    >
-      <Home />
-    </SWRConfig>
-  );
-};
-
-export async function getServerSideProps() {
-  const products = await client.product.findMany({});
+      },
+    },
+  });
   return {
     props: {
       products: JSON.parse(JSON.stringify(products)),
     },
+    revalidate: 10,
   };
 }
 
-export default Page;
+// const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
+//   console.log(products);
+//   return (
+//     <SWRConfig
+//       value={{
+//         fallback: {
+//           "/api/products": {
+//             ok: true,
+//             products,
+//           },
+//         },
+//       }}
+//     >
+//       <Home />
+//     </SWRConfig>
+//   );
+// };
+
+// export async function getServerSideProps() {
+//   const products = await client.product.findMany({});
+//   return {
+//     props: {
+//       products: JSON.parse(JSON.stringify(products)),
+//     },
+//   };
+// }
+
+export default Home;
