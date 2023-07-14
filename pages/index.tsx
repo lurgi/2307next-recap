@@ -76,20 +76,20 @@ const Home: NextPage = () => {
 //   };
 // }
 
-const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
-  console.log(products);
-  return (
-    <SWRConfig
-      value={{
-        suspense: true,
-      }}
-    >
-      <Suspense fallback={<span>LoadConfig...</span>}>
-        <Home />
-      </Suspense>
-    </SWRConfig>
-  );
-};
+// const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
+//   console.log(products);
+//   return (
+//     <SWRConfig
+//       value={{
+//         suspense: true,
+//       }}
+//     >
+//       <Suspense fallback={<span>LoadConfig...</span>}>
+//         <Home />
+//       </Suspense>
+//     </SWRConfig>
+//   );
+// };
 
 // export async function getServerSideProps() {
 //   const products = await client.product.findMany({});
@@ -100,4 +100,4 @@ const Page: NextPage<{ products: ProductWithFavs[] }> = ({ products }) => {
 //   };
 // }
 
-export default Page;
+export default Home;

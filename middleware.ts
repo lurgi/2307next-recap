@@ -8,7 +8,7 @@ import {
 
 export async function middleware(req: NextRequest, ev: NextFetchEvent) {
   if (req.nextUrl.pathname.startsWith("/chats")) {
-    console.log("chats Only middleware");
+    console.log(req.nextUrl.pathname, "chats Only middleware");
   }
   if (req.nextUrl.pathname.startsWith("/")) {
     const ua = userAgent(req);
